@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+    <title>UAV mini-project: offline results</title><style>
+    body{font:16px/1.55 system-ui,Arial,sans-serif;background:#f7fafc;color:#14213d;max-width:1020px;margin:35px auto;padding:0 20px}
+    .card{background:white;border:1px solid #dee5ee;border-radius:14px;padding:24px;margin:20px 0}
+    h1,h2{line-height:1.25}h1{font-size:30px}h2{font-size:21px}
+    .kpis{display:flex;flex-wrap:wrap;gap:14px}.kpis div{flex:1;min-width:160px;background:#edf3fe;border-radius:10px;padding:14px}
+    .kpis b{display:block;font-size:24px}table{border-collapse:collapse;width:100%;font-size:14px}
+    th,td{padding:9px;border-bottom:1px solid #e1e7ee;text-align:left}img{max-width:100%;height:auto}figure{margin:0 0 24px}
+    .warn{border-left:4px solid #d97706;padding-left:13px}.note{color:#475569}
+    </style></head><body>
+    <h1>Condition-Aware Adaptive Perception — Offline Experimental Review</h1>
+    <p class="note">Recorded-video detector baseline and archived still-frame mode-choice experiment. Not a deployed or complete tracking system.</p>
+    <section class="card"><h2>Clip 7 detection continuity</h2>
+    <div class="kpis"><div><b>120</b>frames reviewed</div>
+    <div><b>59</b>frames with predictions</div>
+    <div><b>43</b>frames with IoU ≥ 0.5</div>
+    <div><b>68</b>longest unmatched run (frames)</div></div>
+    <p>Longest unmatched interval: frames 39–106.</p><video controls preload="metadata" width="100%" src="../videos/clip_7_detector_review_h264.mp4"></video>
+    <p class="note">Green boxes are Purdue reference annotations; magenta boxes are independent detector predictions. No predicted tracking IDs are shown.</p></section>
+    <section class="card"><h2>Learned mode replay (Clip 8)</h2>
+    <table><thead><tr><th>Policy</th><th>TP</th><th>FP</th><th>FN</th><th>Precision %</th><th>Recall %</th><th>Latency ms</th></tr></thead>
+    <tbody><tr><td>ALWAYS_FAST</td><td>4</td><td>58</td><td>172</td><td>6.45</td><td>2.27</td><td>29.305</td></tr><tr><td>ALWAYS_ROBUST</td><td>25</td><td>92</td><td>151</td><td>21.37</td><td>14.2</td><td>30.913</td></tr><tr><td>LEARNED_OFFLINE_REPLAY</td><td>12</td><td>60</td><td>164</td><td>16.67</td><td>6.82</td><td>29.619</td></tr></tbody></table>
+    <p><strong>Always ROBUST has better recall than learned replay.</strong>
+    These are archived still-image results, not video-tracking metrics.</p></section>
+    <section class="card"><h2>Charts</h2><figure><img src="clip7_detection_timeline.png" alt="Offline experiment chart"></figure><figure><img src="policy_recall.png" alt="Offline experiment chart"></figure><figure><img src="policy_latency.png" alt="Offline experiment chart"></figure></section>
+    <section class="card"><h2>What remains missing</h2>
+    <ul><li>Independently generated predicted track IDs</li>
+    <li>Integrated frame-by-frame adaptive processing evaluated on a video sequence</li>
+    <li>Formal tracking performance metrics</li></ul></section>
+    <section class="card warn"><h2>Data provenance and cautions</h2>
+    <p>Benchmark clip rows: {&#x27;Clip 7&#x27;: 180, &#x27;Clip 8&#x27;: 180}</p><ul><li>No additional file/split warnings.</li></ul>
+    <p>Latency excludes frame decoding, feature extraction and switching overhead.</p></section>
+    </body></html>

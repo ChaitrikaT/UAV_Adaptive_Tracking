@@ -4,3 +4,7 @@ data/
 models/*.pt
 results/
 *.zip
+*.pt
+datasets/
+*.pt
+/local_archive/

@@ -1,0 +1,57 @@
+{
+  "video_clip": 7,
+  "frames": 120,
+  "frames_with_detections": 59,
+  "frames_with_iou_at_least_05": 43,
+  "frame_match_rate_pct": 35.83,
+  "longest_unmatched_run": {
+    "start": 39,
+    "end": 106,
+    "frames": 68
+  },
+  "selector_comparison": [
+    {
+      "policy": "ALWAYS_FAST",
+      "frames": 90,
+      "tp": 4,
+      "fp": 58,
+      "fn": 172,
+      "precision_pct": 6.45,
+      "recall_pct": 2.27,
+      "latency_ms": 29.305
+    },
+    {
+      "policy": "ALWAYS_ROBUST",
+      "frames": 90,
+      "tp": 25,
+      "fp": 92,
+      "fn": 151,
+      "precision_pct": 21.37,
+      "recall_pct": 14.2,
+      "latency_ms": 30.913
+    },
+    {
+      "policy": "LEARNED_OFFLINE_REPLAY",
+      "frames": 90,
+      "tp": 12,
+      "fp": 60,
+      "fn": 164,
+      "precision_pct": 16.67,
+      "recall_pct": 6.82,
+      "latency_ms": 29.619
+    }
+  ],
+  "replay_training_clip": 7,
+  "replay_evaluation_clip": 8,
+  "benchmark_clips": {
+    "Clip 7": 180,
+    "Clip 8": 180
+  },
+  "warnings": [],
+  "capabilities_not_demonstrated": [
+    "Independent predicted tracking IDs",
+    "End-to-end adaptive video processing",
+    "IDF1/HOTA/MOTA tracking scores",
+    "Real-time video throughput"
+  ]
+}
