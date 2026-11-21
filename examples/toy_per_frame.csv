@@ -1,0 +1,7 @@
+frame,mode,imgsz,latency_ms,TP,FP,FN
+Clip_98_frame_000001.jpg,FAST,640,8.0,0,0,1
+Clip_98_frame_000001.jpg,ROBUST,960,12.0,1,0,0
+Clip_98_frame_000021.jpg,FAST,640,8.5,1,1,0
+Clip_98_frame_000021.jpg,ROBUST,960,11.5,1,0,0
+Clip_98_frame_000041.jpg,FAST,640,9.0,0,0,1
+Clip_98_frame_000041.jpg,ROBUST,960,12.5,0,1,1

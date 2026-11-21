@@ -1,4 +1,4 @@
-"""Offline FAST/ROBUST detector benchmark on sampled, prerecorded test images.
+"""Offline FAST/ROBUST detector benchmark on sampled, prerecorded VALIDATION images.
 
 No camera, vehicle, tracking, or autonomous switching interfaces.
 COCO model is for speed only. UAV localization metrics are enabled only when
@@ -60,14 +60,14 @@ def counts(gt, pred, threshold=0.5):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--weights', default='yolo11n.pt')
-    ap.add_argument('--limit', type=int, default=30, help='Number of test images')
+    ap.add_argument('--limit', type=int, default=30, help='Number of sampled validation images')
     ap.add_argument('--uav-model', action='store_true', help='Enable UAV quality metrics for a UAV-labelled model')
     args = ap.parse_args()
     if args.limit < 1:
         ap.error('--limit must be positive')
     images = sorted((ROOT/'datasets'/'prepared'/'images'/'val').glob('*.jpg'))[:args.limit]
     if not images:
-        raise RuntimeError('No test images. Run prepare_dataset.py first.')
+        raise RuntimeError('No validation images. Run prepare_dataset.py first.')
     model = YOLO(args.weights)
     device = 0 if torch.cuda.is_available() else 'cpu'
     names = model.names
@@ -114,7 +114,7 @@ def main():
             if index == 0:
                 cv2.imwrite(str(out/f'{mode}_example.jpg'), result.plot())
         if (index + 1) % 10 == 0:
-            print(f'Processed {index+1}/{len(images)} test frames')
+            print(f'Processed {index+1}/{len(images)} validation images')
     with (out/'per_frame.csv').open('w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=rows[0].keys())
         writer.writeheader(); writer.writerows(rows)

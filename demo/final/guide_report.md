@@ -25,9 +25,9 @@
 - These results do not demonstrate reliable real-time operation.
 
 ## Guide demonstration (in order)
-1. Open `results/videos/clip_7_detector_review.mp4` (green = reference, magenta = predicted).
-2. Show `results/final/clip7_detection_timeline.png` to explain the long failure interval.
-3. Show `results/final/policy_recall.png` and `results/final/policy_latency.png` for measured comparisons.
+1. Open `demo/videos/clip_7_detector_review_h264.mp4` (green = reference, magenta = predicted).
+2. Show `demo/final/clip7_detection_timeline.png` to explain the long failure interval.
+3. Show `demo/final/policy_recall.png` and `demo/final/policy_latency.png` for measured comparisons.
 4. Explain honestly that independently predicted track IDs and integrated adaptive video evaluation are missing.
 
 ## Source paths

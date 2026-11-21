@@ -52,6 +52,27 @@ def read_records(path, prediction=False):
     return data
 
 
+
+def count_identity_changes(history):
+    """Audit continuity in already-matched reference/predicted ID histories.
+
+    Three counts: ID changes between consecutive observed frames, ID changes
+    after at least one unobserved frame, and total matched resumptions.
+    Not standard MOT ID switches, IDF1, or HOTA.
+    """
+    adjacent_changes = after_gap_changes = resumption_pairs = 0
+    for observations in history.values():
+        ordered = sorted(observations)
+        for (oldframe, oldid), (newframe, newid) in zip(ordered, ordered[1:]):
+            gap = newframe - oldframe
+            if gap > 1:
+                resumption_pairs += 1
+                if oldid != newid:
+                    after_gap_changes += 1
+            elif gap == 1 and oldid != newid:
+                adjacent_changes += 1
+    return adjacent_changes, after_gap_changes, resumption_pairs
+
 def summarize(predictions, threshold):
     clips=sorted({c for c,_ in predictions})
     if not clips:raise ValueError('Prediction CSV has no rows')
@@ -76,17 +97,12 @@ def summarize(predictions, threshold):
                 ref_id=refs[gi][0]; pred_id=boxes[pi][0]
                 history[ref_id].append((frame,pred_id))
                 matched_rows+=1
-        changes=0
-        for observations in history.values():
-            observations.sort()
-            for (oldframe,oldid),(newframe,newid) in zip(observations,observations[1:]):
-                # An identity change is counted only between adjacent frames
-                # with a matched observation (unmatched gaps excluded).
-                if newframe==oldframe+1 and newid!=oldid:
-                    changes+=1
+        adjacent_changes, after_gap_changes, resumption_pairs = count_identity_changes(history)
         results.append({'clip':clip,'matched_reference_boxes':matched_rows,
                         'matched_reference_ids':len(history),
-                        'adjacent_matched_id_changes':changes})
+                        'adjacent_matched_id_changes':adjacent_changes,
+                        'after_gap_id_changes':after_gap_changes,
+                        'matched_resumption_pairs':resumption_pairs})
     return results
 
 
@@ -105,6 +121,6 @@ def main():
         writer.writeheader(); writer.writerows(results)
     for r in results:print(r)
     print('Saved:',out)
-    print('This is a LIMITED offline identity-change diagnostic, not IDF1/HOTA.')
+    print('This is a LIMITED offline ID diagnostic (including gap resumptions), not IDF1/HOTA/MOTA.')
 
 if __name__=='__main__':main()
