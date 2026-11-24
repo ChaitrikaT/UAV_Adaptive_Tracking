@@ -1,0 +1,9 @@
+{
+  "clip": 8,
+  "policy": "rule",
+  "frames": 150,
+  "mode_mismatches": 0,
+  "detection_count_mismatches": 0,
+  "track_row_mismatches": 0,
+  "replay_equals_online": true
+}

@@ -1,0 +1,64 @@
+
+from pathlib import Path
+from collections import Counter
+import csv
+
+ROOT = Path(__file__).resolve().parents[1]
+ANNO_DIR = ROOT / "data" / "annotations"
+
+WIDTH = 1920
+HEIGHT = 1080
+
+for clip_no in range(1, 11):
+    path = ANNO_DIR / f"Clip_{clip_no}_refined.txt"
+
+    if not path.exists():
+        print(f"Clip {clip_no}: file missing")
+        continue
+
+    reasons = Counter()
+    examples = []
+
+    with path.open(
+        "r", encoding="utf-8-sig", errors="replace"
+    ) as f:
+        for row in csv.reader(f):
+            if len(row) < 6:
+                continue
+
+            try:
+                frame = int(float(row[0]))
+                x, y, w, h = map(float, row[2:6])
+            except ValueError:
+                reasons["unreadable_row"] += 1
+                continue
+
+            issues = []
+
+            if w <= 0 or h <= 0:
+                issues.append("nonpositive_size")
+            if x < 0:
+                issues.append("left_edge")
+            if y < 0:
+                issues.append("top_edge")
+            if x + w > WIDTH:
+                issues.append("right_edge")
+            if y + h > HEIGHT:
+                issues.append("bottom_edge")
+
+            if issues:
+                for issue in issues:
+                    reasons[issue] += 1
+
+                if len(examples) < 3:
+                    examples.append(
+                        (frame, row[2:6], issues)
+                    )
+
+    print(f"\nClip {clip_no}: {dict(reasons)}")
+
+    for frame, box, issues in examples:
+        print(
+            f"  Frame {frame}, "
+            f"box={box}, issues={issues}"
+        )

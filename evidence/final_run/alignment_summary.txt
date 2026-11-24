@@ -1,0 +1,59 @@
+== clip 7
+  annotated_frames: 1800
+  ref_boxes: 1800
+  median_ref_size_px: 17.0
+  p10_ref_size_px: 11.8
+  mean_dets_per_frame: 1.155
+  frames_with_any_det: 0.6206
+  median_det_conf: 0.24
+  p90_det_conf: 0.484
+  refs_with_IoU>=0.5: 0.3683
+  refs_with_IoU>=0.3: 0.4844
+  refs_with_IoU>=0.1: 0.5389
+  median_nearest_det_distance_in_ref_sizes: 0.14
+  recall at IoU>=0.5 by annotation shift k (ref of frame f+k vs detections of frame f): {-5: np.float64(0.0607), -4: np.float64(0.0896), -3: np.float64(0.1352), -2: np.float64(0.2113), -1: np.float64(0.3041), 0: np.float64(0.3683), 1: np.float64(0.2885), 2: np.float64(0.1796), 3: np.float64(0.1113), 4: np.float64(0.0741), 5: np.float64(0.0518)}
+
+== clip 8
+  annotated_frames: 1800
+  ref_boxes: 3535
+  median_ref_size_px: 10.4
+  p10_ref_size_px: 7.8
+  mean_dets_per_frame: 1.861
+  frames_with_any_det: 0.7789
+  median_det_conf: 0.238
+  p90_det_conf: 0.481
+  refs_with_IoU>=0.5: 0.1813
+  refs_with_IoU>=0.3: 0.4331
+  refs_with_IoU>=0.1: 0.4945
+  median_nearest_det_distance_in_ref_sizes: 0.27
+  recall at IoU>=0.5 by annotation shift k (ref of frame f+k vs detections of frame f): {-5: np.float64(0.0136), -4: np.float64(0.019), -3: np.float64(0.0295), -2: np.float64(0.0527), -1: np.float64(0.0996), 0: np.float64(0.1813), 1: np.float64(0.0959), 2: np.float64(0.0507), 3: np.float64(0.0255), 4: np.float64(0.0159), 5: np.float64(0.0108)}
+
+== clip 9
+  annotated_frames: 1800
+  ref_boxes: 1800
+  median_ref_size_px: 16.2
+  p10_ref_size_px: 16.2
+  mean_dets_per_frame: 0.429
+  frames_with_any_det: 0.2972
+  median_det_conf: 0.162
+  p90_det_conf: 0.291
+  refs_with_IoU>=0.5: 0.0456
+  refs_with_IoU>=0.3: 0.1439
+  refs_with_IoU>=0.1: 0.1844
+  median_nearest_det_distance_in_ref_sizes: 0.32
+  recall at IoU>=0.5 by annotation shift k (ref of frame f+k vs detections of frame f): {-5: np.float64(0.0078), -4: np.float64(0.0089), -3: np.float64(0.0139), -2: np.float64(0.0239), -1: np.float64(0.0406), 0: np.float64(0.0456), 1: np.float64(0.0267), 2: np.float64(0.0145), 3: np.float64(0.0061), 4: np.float64(0.0022), 5: np.float64(0.0022)}
+
+== clip 10
+  annotated_frames: 1800
+  ref_boxes: 1806
+  median_ref_size_px: 16.2
+  p10_ref_size_px: 12.3
+  mean_dets_per_frame: 0.084
+  frames_with_any_det: 0.0572
+  median_det_conf: 0.122
+  p90_det_conf: 0.191
+  refs_with_IoU>=0.5: 0.0
+  refs_with_IoU>=0.3: 0.0
+  refs_with_IoU>=0.1: 0.0
+  median_nearest_det_distance_in_ref_sizes: 54.35
+  recall at IoU>=0.5 by annotation shift k (ref of frame f+k vs detections of frame f): {-5: np.float64(0.0), -4: np.float64(0.0), -3: np.float64(0.0), -2: np.float64(0.0), -1: np.float64(0.0), 0: np.float64(0.0), 1: np.float64(0.0), 2: np.float64(0.0), 3: np.float64(0.0), 4: np.float64(0.0), 5: np.float64(0.0)}

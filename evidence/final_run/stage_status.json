@@ -1,0 +1,42 @@
+{
+  "cache": {
+    "ok": true,
+    "seconds": 310.5
+  },
+  "verify": {
+    "ok": true,
+    "seconds": 23.1
+  },
+  "analyze": {
+    "ok": true,
+    "seconds": 11.2
+  },
+  "tune": {
+    "ok": true,
+    "seconds": 20.7
+  },
+  "eval_7_to_8": {
+    "ok": true,
+    "seconds": 25.7
+  },
+  "eval_8_to_7": {
+    "ok": true,
+    "seconds": 26.3
+  },
+  "demo": {
+    "ok": true,
+    "seconds": 74.8
+  },
+  "cache_test": {
+    "ok": true,
+    "seconds": 289.2
+  },
+  "eval_test": {
+    "ok": true,
+    "seconds": 34.4
+  },
+  "demo_test": {
+    "ok": true,
+    "seconds": 61.4
+  }
+}

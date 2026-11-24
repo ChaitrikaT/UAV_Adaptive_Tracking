@@ -1,0 +1,7 @@
+{
+  "high_conf": 0.4,
+  "max_age": 60,
+  "emit_coasting": false,
+  "chosen_on": "clip 7 (validation), best ROBUST IDF1",
+  "IDF1_on_clip7": 0.1213
+}

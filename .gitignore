@@ -7,4 +7,15 @@ results/
 *.pt
 datasets/
 *.pt
-/local_archive/
+/local_archive/*.pkl
+*.joblib
+*.tmp.mp4
+*.render.tmp.mp4
+*.mp4
+!demo/videos/*.mp4
+
+local_archive/
+handoff_evidence/
+*tempCodeRunnerFile*
+gitignore_additions.txt
+

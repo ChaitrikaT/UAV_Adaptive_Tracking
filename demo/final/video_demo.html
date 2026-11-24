@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>UAV mini-project: video demonstrations</title>
+<style>
+body{font:16px/1.55 system-ui,Arial,sans-serif;background:#f7fafc;color:#14213d;max-width:1100px;margin:30px auto;padding:0 20px}
+.card{background:#fff;border:1px solid #dee5ee;border-radius:14px;padding:22px;margin:20px 0}
+h1{font-size:28px}h2{font-size:20px;margin-top:0}video{width:100%;border-radius:8px;background:#000}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;margin-left:8px;vertical-align:middle}
+.real{background:#dcfce7;color:#14532d}.arch{background:#fef3c7;color:#78350f}.syn{background:#fee2e2;color:#7f1d1d}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:8px;border-bottom:1px solid #e1e7ee;text-align:left;vertical-align:top}
+.note{color:#475569;font-size:14px}
+</style></head><body>
+<h1>Condition-Aware Adaptive Perception: video demonstrations</h1>
+<p class="note">Three different kinds of evidence. Read the label on each one before presenting it.</p>
+
+<section class="card"><h2>1. Recorded detector review, Clip 7 <span class="tag real">REAL FOOTAGE, MEASURED EARLIER</span></h2>
+<video controls preload="metadata" src="../videos/clip_7_detector_review_h264.mp4"></video>
+<p>Green = Purdue reference annotation (human labels, with a reference-guided zoom inset for review only). Magenta = independent per-frame detector box (trained YOLO11n, confidence 0.10, 960 px). 120 consecutive frames: 59 with a detector box, 43 with IoU &ge; 0.5, longest unmatched run frames 39&ndash;106 (68 frames).</p>
+<p><b>Not shown:</b> tracking IDs, mode switching, speed. Each frame is processed independently.</p></section>
+
+<section class="card"><h2>2. Same video with the saved per-frame numbers <span class="tag arch">ARCHIVED RESULTS REPLAY</span></h2>
+<video controls preload="metadata" src="../videos/clip_7_archived_results_replay_h264.mp4"></video>
+<p>The recorded video on top; below it the saved CSV values drawn per frame: max IoU (matched / unmatched), frames where the detector produced a box, and whole-frame brightness and sharpness. The script checks that the CSVs reproduce 120 / 59 / 43 / 68 before drawing anything.</p>
+<p><b>Not shown:</b> anything computed live. No model ran to make this video. The condition plots show that these global values look alike on matched and unmatched frames, so they do not demonstrate that condition estimation explains detector failures.</p></section>
+
+<section class="card"><h2>3. Mechanism illustration <span class="tag syn">SYNTHETIC: NOT UAV DATA</span></h2>
+<video controls preload="metadata" src="../videos/synthetic_mechanism_demo_h264.mp4"></video>
+<p>Simulated squares and a hand-written simulated detector. Shows the actual tracker and the actual online FAST/ROBUST switching code on data with known truth: predicted IDs persist, the mode is chosen before each frame's detection, a one-frame false alarm never receives an ID. Summary numbers are in <code>demo/data/synthetic_mechanism_summary.json</code>.</p>
+<p><b>Not evidence of:</b> performance of the trained detector, tracking of real UAVs, or any benefit on Purdue clips.</p></section>
+
+<section class="card"><h2>What each item proves</h2>
+<table><tr><th></th><th>Real data</th><th>Model run for this video</th><th>Predicted IDs</th><th>Online mode switching</th></tr>
+<tr><td>1. Detector review</td><td>yes</td><td>earlier run, per-frame</td><td>no</td><td>no</td></tr>
+<tr><td>2. Archived replay</td><td>yes (saved CSVs)</td><td>none</td><td>no</td><td>no</td></tr>
+<tr><td>3. Synthetic</td><td>no</td><td>simulated detector</td><td>yes (synthetic)</td><td>yes (synthetic)</td></tr></table>
+<p class="note">Real-data tracking and online switching on Purdue clips need <code>best.pt</code> and the clips on your PC: run <code>run_tracking.py</code> (see NEXT_STEPS.md). Those results do not exist yet.</p></section>
+</body></html>

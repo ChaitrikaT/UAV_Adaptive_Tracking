@@ -1,0 +1,426 @@
+{
+  "tag": "default",
+  "train": [
+    8
+  ],
+  "eval": [
+    7
+  ],
+  "tracker_settings": {
+    "high_conf": 0.4,
+    "max_age": 60,
+    "emit_coasting": false,
+    "chosen_on": "clip 7 (validation), best ROBUST IDF1",
+    "IDF1_on_clip7": 0.1213
+  },
+  "difficulty_training": {
+    "history": [
+      {
+        "iteration": 0,
+        "rollout_policy": "rule",
+        "rows": 1800,
+        "hard_fraction": 0.945,
+        "tau": 0.1554,
+        "training_gain_tp": 360.4,
+        "rollout_robust_fraction": 1.0
+      },
+      {
+        "iteration": 1,
+        "rollout_policy": "difficulty",
+        "rows": 3600,
+        "hard_fraction": 0.945,
+        "tau": 0.1464,
+        "training_gain_tp": 720.8,
+        "rollout_robust_fraction": 1.0
+      }
+    ],
+    "lam": 0.1,
+    "hold": 3,
+    "tau": 0.1464361774124528,
+    "standardised_coefficients": {
+      "brightness": -2.368,
+      "contrast": -3.8099,
+      "sharpness": 1.9999,
+      "frame_change": -0.0102,
+      "has_track": 0.2073,
+      "frames_since_seen": -0.0569,
+      "target_size": -0.1269,
+      "target_speed": -0.3262,
+      "last_conf": 0.0964,
+      "prev_robust": -0.3184
+    },
+    "blocked_cv_auc_on_training_rows": 0.7660657176733231,
+    "never_switches": false
+  },
+  "learned_training": {
+    "history": [
+      {
+        "iteration": 0,
+        "rollout_policy": "rule",
+        "rollout_robust_fraction": 1.0,
+        "aggregated_rows": 1800,
+        "training_rows": 609,
+        "dropped_no_evidence": 1191,
+        "labels": {
+          "ROBUST": 519,
+          "FAST": 90
+        }
+      },
+      {
+        "iteration": 1,
+        "rollout_policy": "learned",
+        "rollout_robust_fraction": 0.6761,
+        "aggregated_rows": 3600,
+        "training_rows": 1218,
+        "dropped_no_evidence": 2382,
+        "labels": {
+          "ROBUST": 1038,
+          "FAST": 180
+        }
+      }
+    ],
+    "blocked_cv_final_policy_rollout": {
+      "folds_used": 5,
+      "mean_balanced_accuracy": 0.5731,
+      "note": "0.5 = no better than chance on balanced classes"
+    },
+    "tie_rules": {
+      "both_fail": "exclude",
+      "equal_hit": "fast"
+    }
+  },
+  "per_clip": {
+    "7": {
+      "fast": {
+        "policy": "always_fast",
+        "tracking": {
+          "frames_scored": 1800,
+          "ref_boxes": 1800,
+          "pred_boxes": 649,
+          "TP": 307,
+          "FP": 342,
+          "FN": 1493,
+          "ID_switches": 2,
+          "fragmentations": 63,
+          "ref_duplicate_id_rows": 0,
+          "IDTP": 160,
+          "IDFP": 489,
+          "IDFN": 1640,
+          "precision": 0.473,
+          "recall": 0.1706,
+          "MOTA": -0.0206,
+          "IDF1": 0.1307,
+          "distinct_pred_ids": 3,
+          "iou_thr": 0.5,
+          "annotated_only": true,
+          "protocol": "annotated-frames-only (project variant, not official MOTChallenge)"
+        },
+        "detection_recall_chosen_mode": 0.2417,
+        "robust_fraction": 0.0,
+        "mean_detect_ms": 34.152,
+        "mean_overhead_ms": 0.104,
+        "mean_total_ms": 42.323,
+        "composed_fps": 23.63
+      },
+      "robust": {
+        "policy": "always_robust",
+        "tracking": {
+          "frames_scored": 1800,
+          "ref_boxes": 1800,
+          "pred_boxes": 1169,
+          "TP": 504,
+          "FP": 665,
+          "FN": 1296,
+          "ID_switches": 27,
+          "fragmentations": 72,
+          "ref_duplicate_id_rows": 0,
+          "IDTP": 180,
+          "IDFP": 989,
+          "IDFN": 1620,
+          "precision": 0.4311,
+          "recall": 0.28,
+          "MOTA": -0.1044,
+          "IDF1": 0.1213,
+          "distinct_pred_ids": 6,
+          "iou_thr": 0.5,
+          "annotated_only": true,
+          "protocol": "annotated-frames-only (project variant, not official MOTChallenge)"
+        },
+        "detection_recall_chosen_mode": 0.3683,
+        "robust_fraction": 1.0,
+        "mean_detect_ms": 33.966,
+        "mean_overhead_ms": 0.153,
+        "mean_total_ms": 42.185,
+        "composed_fps": 23.7
+      },
+      "rule": {
+        "policy": "rule",
+        "tracking": {
+          "frames_scored": 1800,
+          "ref_boxes": 1800,
+          "pred_boxes": 1169,
+          "TP": 504,
+          "FP": 665,
+          "FN": 1296,
+          "ID_switches": 27,
+          "fragmentations": 72,
+          "ref_duplicate_id_rows": 0,
+          "IDTP": 180,
+          "IDFP": 989,
+          "IDFN": 1620,
+          "precision": 0.4311,
+          "recall": 0.28,
+          "MOTA": -0.1044,
+          "IDF1": 0.1213,
+          "distinct_pred_ids": 6,
+          "iou_thr": 0.5,
+          "annotated_only": true,
+          "protocol": "annotated-frames-only (project variant, not official MOTChallenge)"
+        },
+        "detection_recall_chosen_mode": 0.3683,
+        "robust_fraction": 1.0,
+        "mean_detect_ms": 33.966,
+        "mean_overhead_ms": 0.157,
+        "mean_total_ms": 42.19,
+        "composed_fps": 23.7
+      },
+      "difficulty": {
+        "policy": "difficulty",
+        "tracking": {
+          "frames_scored": 1800,
+          "ref_boxes": 1800,
+          "pred_boxes": 1157,
+          "TP": 510,
+          "FP": 647,
+          "FN": 1290,
+          "ID_switches": 26,
+          "fragmentations": 76,
+          "ref_duplicate_id_rows": 0,
+          "IDTP": 179,
+          "IDFP": 978,
+          "IDFN": 1621,
+          "precision": 0.4408,
+          "recall": 0.2833,
+          "MOTA": -0.0906,
+          "IDF1": 0.1211,
+          "distinct_pred_ids": 6,
+          "iou_thr": 0.5,
+          "annotated_only": true,
+          "protocol": "annotated-frames-only (project variant, not official MOTChallenge)"
+        },
+        "detection_recall_chosen_mode": 0.3683,
+        "robust_fraction": 0.9844,
+        "mean_detect_ms": 33.948,
+        "mean_overhead_ms": 0.186,
+        "mean_total_ms": 42.201,
+        "composed_fps": 23.7
+      },
+      "learned": {
+        "policy": "learned",
+        "tracking": {
+          "frames_scored": 1800,
+          "ref_boxes": 1800,
+          "pred_boxes": 1051,
+          "TP": 492,
+          "FP": 559,
+          "FN": 1308,
+          "ID_switches": 23,
+          "fragmentations": 80,
+          "ref_duplicate_id_rows": 0,
+          "IDTP": 168,
+          "IDFP": 883,
+          "IDFN": 1632,
+          "precision": 0.4681,
+          "recall": 0.2733,
+          "MOTA": -0.05,
+          "IDF1": 0.1179,
+          "distinct_pred_ids": 6,
+          "iou_thr": 0.5,
+          "annotated_only": true,
+          "protocol": "annotated-frames-only (project variant, not official MOTChallenge)"
+        },
+        "detection_recall_chosen_mode": 0.3483,
+        "robust_fraction": 0.6772,
+        "mean_detect_ms": 34.029,
+        "mean_overhead_ms": 0.431,
+        "mean_total_ms": 42.527,
+        "composed_fps": 23.51
+      }
+    }
+  },
+  "comparison": {
+    "robust_vs_fast": {
+      "d_recall": [
+        0.1267,
+        0.0711,
+        0.1872
+      ],
+      "d_cost_ms": [
+        -0.1371,
+        -0.3913,
+        0.1224
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "difficulty_vs_fast": {
+      "d_recall": [
+        0.1267,
+        0.0717,
+        0.1867
+      ],
+      "d_cost_ms": [
+        -0.1218,
+        -0.3726,
+        0.1233
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "difficulty_vs_robust": {
+      "d_recall": [
+        0.0,
+        -0.0022,
+        0.0022
+      ],
+      "d_cost_ms": [
+        0.0154,
+        -0.0293,
+        0.0497
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "rule_vs_fast": {
+      "d_recall": [
+        0.1267,
+        0.0711,
+        0.1872
+      ],
+      "d_cost_ms": [
+        -0.1326,
+        -0.3831,
+        0.1289
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "verdict_difficulty": "INCONCLUSIVE",
+    "learned_vs_fast": {
+      "d_recall": [
+        0.1067,
+        0.06,
+        0.1606
+      ],
+      "d_cost_ms": [
+        0.2039,
+        -0.0197,
+        0.4157
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "learned_vs_robust": {
+      "d_recall": [
+        -0.02,
+        -0.0356,
+        -0.005
+      ],
+      "d_cost_ms": [
+        0.3411,
+        0.1796,
+        0.4934
+      ],
+      "blocks": 60,
+      "block_frames": 30
+    },
+    "verdict_learned": "NOT SUPPORTED"
+  },
+  "pooled": {
+    "fast": {
+      "recall": [
+        0.24166666666666667,
+        0.1710972222222222,
+        0.31726388888888885
+      ],
+      "mean_total_ms": [
+        42.322619997947996,
+        41.254950198969006,
+        43.57805310522478
+      ]
+    },
+    "robust": {
+      "recall": [
+        0.36833333333333335,
+        0.2777638888888889,
+        0.45890277777777777
+      ],
+      "mean_total_ms": [
+        42.185479835477764,
+        41.05249739346456,
+        43.42165901266465
+      ]
+    },
+    "rule": {
+      "recall": [
+        0.36833333333333335,
+        0.2777638888888889,
+        0.45890277777777777
+      ],
+      "mean_total_ms": [
+        42.19006049783073,
+        41.058138311009515,
+        43.42600210240279
+      ]
+    },
+    "difficulty": {
+      "recall": [
+        0.36833333333333335,
+        0.2783333333333333,
+        0.45944444444444443
+      ],
+      "mean_total_ms": [
+        42.200863887943946,
+        41.073256168695586,
+        43.4156377531601
+      ]
+    },
+    "learned": {
+      "recall": [
+        0.34833333333333333,
+        0.2633333333333333,
+        0.43444444444444447
+      ],
+      "mean_total_ms": [
+        42.52656606310565,
+        41.421044499089476,
+        43.72124511076577
+      ]
+    }
+  },
+  "difficulty_auc_heldout": {
+    "7": {
+      "predicts_FAST_miss": {
+        "auc": 0.438,
+        "ci95": [
+          0.3351,
+          0.5559
+        ],
+        "n": 1800,
+        "positives": 1365
+      },
+      "predicts_ROBUST_helps": {
+        "auc": 0.4705,
+        "ci95": [
+          0.3973,
+          0.5461
+        ],
+        "n": 1800,
+        "positives": 311
+      }
+    }
+  },
+  "notes": [],
+  "created": "2026-11-24 07:16:34",
+  "final_test": false
+}

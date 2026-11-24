@@ -1,10 +1,10 @@
-# For reproducing offline experiments only; the saved demo needs no third-party packages.
-# Install a CUDA-appropriate PyTorch build separately if you require GPU training.
-numpy
-opencv-python
-matplotlib
-ultralytics
-scikit-learn
-joblib
-Pillow
-imageio-ffmpeg
+﻿ultralytics>=8.3.0
+torch>=2.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+joblib>=1.3.0
+imageio-ffmpeg>=0.4.9
