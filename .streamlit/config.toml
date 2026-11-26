@@ -1,0 +1,25 @@
+# Look & feel of the app. Clean white page, light gray sidebar, one blue accent.
+[theme]
+base = "light"
+primaryColor = "#2563eb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f6f7f9"
+textColor = "#1a1f2b"
+borderColor = "#e3e6eb"
+baseRadius = "8px"
+showWidgetBorder = true
+showSidebarBorder = true
+paddingTop = "2rem"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+codeFont = "JetBrains Mono:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+# Order matters: the first colours are used for ADAPTIVE, FAST and ROBUST (see MODE_COLORS in app.py).
+chartCategoricalColors = ["#2563eb", "#0d9488", "#ea580c", "#7c3aed", "#db2777", "#65a30d"]
+
+[theme.sidebar]
+backgroundColor = "#f6f7f9"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#1a1f2b"
+borderColor = "#e3e6eb"
+
+[server]
+maxUploadSize = 1000

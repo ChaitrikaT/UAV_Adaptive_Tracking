@@ -1,0 +1,49 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables & secrets
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Local dataset videos, Ultralytics settings, and temporary paper extracts
+Videos/
+.ultralytics/
+*.pdf
+*_extracted.txt
+
+# Data directories (ignore files, keep directory structure via .gitkeep)
+data/**
+!data/**/
+!data/**/.gitkeep
+
+# Model weights
+weights/*.pt
+weights/*.joblib
+weights/**
+!weights/**/
+!weights/**/.gitkeep
+
+# Outputs
+outputs/**
+!outputs/**/
+!outputs/**/.gitkeep
+
+# Catch-all rule for .gitkeep
+!.gitkeep
+!**/.gitkeep

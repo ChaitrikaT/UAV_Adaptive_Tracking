@@ -1,0 +1,60 @@
+paths:
+  weights_dir: "weights"
+  uploads_dir: "data/uploads"
+  gt_dir: "data/gt"
+  outputs_dir: "outputs"
+  metrics_dir: "outputs/metrics"
+  tracks_dir: "outputs/tracks"
+  videos_dir: "outputs/videos"
+  plots_dir: "outputs/plots"
+  evaluation_dir: "outputs/evaluation"
+
+modes:
+  fast:
+    weights: "weights/yolov8n.pt"
+    imgsz: 640
+    conf: 0.25
+    detect_every_n_frames: 3
+  robust:
+    weights: "weights/yolov8s.pt"
+    imgsz: 1280
+    conf: 0.20
+    detect_every_n_frames: 1
+
+# Optional class filter IDs.
+# For COCO weights, [4, 14, 33] (airplane, bird, kite) filters out ground clutter (cars/cows/skis).
+# For custom drone-finetuned weights (class 0 = drone), set to [] or [0].
+classes: [4, 14, 33]
+
+features:
+  downscale_flow_width: 320
+
+selector:
+  # Supported: "rules", "tree", "forest", "gbm", "logreg", "svm", "mlp", "xgb", "lgbm"
+  # Train all learned models with: python -m src.training.train_selector
+  type: "forest"
+  models:
+    tree: "weights/selector_tree.joblib"
+    forest: "weights/selector_forest.joblib"
+    gbm: "weights/selector_gbm.joblib"
+    logreg: "weights/selector_logreg.joblib"
+    svm: "weights/selector_svm.joblib"
+    mlp: "weights/selector_mlp.joblib"
+    xgb: "weights/selector_xgb.joblib"
+    lgbm: "weights/selector_lgbm.joblib"
+  decide_every: 3                 # ask the learned model every N frames (features still update every frame)
+  threshold: 0.5                  # go ROBUST when P(ROBUST needed) >= threshold
+  rule_thresholds:
+    blur_threshold: 100.0
+    area_ratio_threshold: 0.003
+    conf_threshold: 0.45
+    camera_motion_threshold: 3.5
+    contrast_threshold: 22.0
+
+hysteresis:
+  min_mode_duration: 15
+  persistence_frames: 5
+
+tracking:
+  tracker_type: "bytetrack.yaml"
+  trail_length: 30
