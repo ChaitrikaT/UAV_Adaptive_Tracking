@@ -19,3 +19,12 @@ handoff_evidence/
 *tempCodeRunnerFile*
 gitignore_additions.txt
 
+
+raw_clips/
+demo_out/
+demo_app.py
+
+
+weights/
+policy/
+
