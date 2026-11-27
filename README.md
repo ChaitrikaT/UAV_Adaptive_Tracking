@@ -7,7 +7,7 @@ A research-rigorous, demo-ready air-to-air UAV tracking framework combining:
   - `rules` (hand-set baseline)
   - `tree` (Decision Tree) and `forest` (Random Forest), trained on **ground-truth-derived labels** (label `ROBUST` when `FAST` misses a GT target in the next 15 frames).
 - **Single-Class Drone Detection + Quiet Bird Filtering** (`src/detection/detector.py`, `config.yaml`):
-  - Fine-tuned single-class (`drone`) YOLOv8n (`640px`, FAST) and YOLOv8s (`1280px`, ROBUST) trained strictly on the Purdue training split.
+  - Fine-tuned single-class (`drone`) YOLOv8n (`weights/purdue_drone_yolov8n.pt`) run in a two-resolution design: `640px` (`conf=0.20`, every 3rd frame) for **FAST** and `1280px` (`conf=0.12`, every frame) for **ROBUST**, trained strictly on the Purdue training split.
   - `AerialBirdFilter` runs a lightweight COCO check (`bird=14`, `airplane=4`) when candidate detections are present, quietly suppressing bird false positives before ByteTrack.
 - **Synchronized ByteTrack + Hysteresis Smoothing** (`src/tracking/tracker.py`, `src/selector/selector.py`):
   - `ByteTrackerWrapper` increments `frame_id` and advances Kalman predictions on skipped-detector frames.
@@ -42,19 +42,20 @@ Trained with `python -m src.training.train_selector --split-file data/splits/pur
 
 ## Held-Out Purdue Test Evaluation (10 Videos: `Clip_41`–`Clip_50`, 300 Frames/Clip)
 
-Evaluated with `python -m src.evaluation.eval_split --split test --max-frames 300 --repeats 5` (GPU: NVIDIA GeForce RTX 4050 Laptop GPU, shuffled order, 1 warm-up + 5 timing repeats, IoU=0.3):
+Evaluated with `python -m src.evaluation.eval_split --split test --max-frames 300 --repeats 5` (GPU: NVIDIA GeForce RTX 4050 Laptop GPU, shuffled order, 1 warm-up + 5 timing repeats, IoU=0.3, val-tuned thresholds `tree=0.35`, `forest=0.65`):
 
-| Configuration | HOTA | IDF1 | MOTA | IDSW | Recall % | Precision % | Detector Calls % | Time in ROBUST % | Median FPS (Min–Max) | Replay OK |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| **Always FAST** (`yolov8n`, 640px) | 2.88 | 6.32 | 3.82 | 40 | 6.85 | 59.35 | 33.30% | 0.00% | 29.26 (28.92–29.78) | — |
-| **Always ROBUST** (`yolov8s`, 1280px) | 2.04 | 4.17 | 1.73 | 23 | 4.40 | 51.82 | 100.00% | 100.00% | 18.51 (18.35–18.64) | — |
-| **Adaptive (Rules)** | 2.07 | 4.19 | 1.95 | 25 | 4.58 | 55.20 | 90.66% | 85.86% | 23.52 (22.98–23.73) | PASS |
-| **Adaptive (Decision Tree)** | 2.36 | 4.88 | 2.01 | **23** | 4.93 | 58.36 | **72.26%** | **58.33%** | **23.50** (23.07–24.26) | PASS |
-| **Adaptive (Random Forest)** | 2.03 | 4.41 | 1.96 | **23** | 4.66 | 53.15 | 82.63% | 73.90% | 20.00 (19.73–20.19) | PASS |
+| Configuration | HOTA | IDF1 | MOTA | IDSW | Recall % | Precision % | Detector Calls % | Time in ROBUST % | Median FPS (Min–Max) | Recall Δ vs FAST (95% CI) | Replay OK |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
+| **Always FAST** (`640px`, 1/3 frames) | 2.88 | 6.32 | 3.82 | 40 | 6.85 | 59.35 | 33.3% | 0.00% | 28.39 (27.81–28.45) | — | — |
+| **Always ROBUST** (`1280px`, every frame) | 8.52 | 13.09 | -14.68 | 56 | 16.11 | 37.61 | 100.0% | 100.00% | 19.48 (18.39–19.64) | +8.70 [+5.41, +11.98] | — |
+| **Adaptive (Rules)** | 8.37 | 12.66 | -11.68 | 54 | 15.74 | 37.47 | 92.6% | 88.76% | 22.63 (21.95–23.41) | +8.54 [+5.33, +11.68] | PASS |
+| **Adaptive (Decision Tree)** | 6.11 | 7.58 | -14.94 | 46 | 12.05 | **43.10** | **75.0%** | **62.43%** | **23.42** (22.48–23.65) | +5.13 [+2.30, +7.96] | PASS |
+| **Adaptive (Random Forest)** | **7.28** | **11.46** | -12.14 | 59 | **15.33** | 41.62 | 85.1% | 77.60% | 21.67 (21.25–21.92) | **+7.99 [+4.75, +11.24]** | PASS |
 
 **Key Findings:**
-- **ID Switches & Compute:** Both learned selectors (`Decision Tree` and `Random Forest`) cut ID switches from **40** (Always FAST) down to **23** (matching Always ROBUST) while reducing detector calls by **17.4%–27.7%** and boosting speed over Always ROBUST (`23.50 FPS` vs `18.51 FPS`).
-- **Tiny-Target Bottleneck:** Purdue targets are often `~13×11 px` in `1080p` frames, keeping overall recall low (`4.4%–6.9%`) under default ByteTrack association thresholds; this motivates future work on ROI-cropped detection around predicted tracks.
+- **Statistically Significant Recall & HOTA Gains:** `Adaptive (Random Forest)` improves HOTA **2.5×** (`7.28` vs `2.88`), IDF1 **1.8×** (`11.46` vs `6.32`), and Recall **2.2×** (`15.33%` vs `6.85%`, `+7.99 pts`, 95% CI `[+4.75, +11.24]`) over `Always FAST`, recovering **95.2%** of `Always ROBUST`'s recall while cutting detector calls by **14.9%** and improving precision (`41.62%` vs `37.61%`).
+- **Compute-First Tradeoff:** `Adaptive (Decision Tree)` cuts detector calls by **25.0%** (`75.0%` vs `100.0%`), boosts speed to **23.42 FPS**, and achieves the highest adaptive precision (`43.10%`).
+- **Tiny-Target Bottleneck:** Purdue targets are often `~13×11 px` in `1080p` frames, which caps absolute recall and causes negative MOTA under `1280px` low-confidence (`0.12`) false positives; this motivates future work on ROI-cropped detection around predicted tracks.
 
 ---
 
@@ -70,9 +71,8 @@ Evaluated with `python -m src.evaluation.eval_split --split test --max-frames 30
 # 3. Create leak-free 32/8/10 Purdue split & YOLO dataset
 .\.venv\Scripts\python.exe -m src.training.prepare_splits
 
-# 4. Fine-tune FAST (640px) & ROBUST (1280px) YOLO on GPU (train split only)
+# 4. Fine-tune single-class UAV YOLO on GPU (train split only)
 .\.venv\Scripts\python.exe -m src.training.finetune_detector --data-yaml data/yolo_drone_split/drone_dataset.yaml --base-weights weights/yolov8n.pt --out-weights weights/purdue_drone_yolov8n.pt --epochs 20 --imgsz 640 --batch 16
-.\.venv\Scripts\python.exe -m src.training.finetune_detector --data-yaml data/yolo_drone_split/drone_dataset.yaml --base-weights weights/yolov8s.pt --out-weights weights/purdue_drone_yolov8s.pt --epochs 20 --imgsz 1280 --batch 4
 
 # 5. Train Decision Tree & Random Forest selectors with GT labels
 .\.venv\Scripts\python.exe -m src.training.train_selector --split-file data/splits/purdue_split.json --split train --gt-dir data/gt --variants 0 --max-frames 200 --models tree forest

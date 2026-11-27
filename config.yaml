@@ -16,9 +16,9 @@ modes:
     conf: 0.20
     detect_every_n_frames: 3
   robust:
-    weights: "weights/purdue_drone_yolov8s.pt"
+    weights: "weights/purdue_drone_yolov8n.pt"
     imgsz: 1280
-    conf: 0.15
+    conf: 0.12
     detect_every_n_frames: 1
 
 # Optional class filter IDs. Empty [] because both drone models only output drone classes.

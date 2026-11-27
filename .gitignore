@@ -24,6 +24,8 @@ __MACOSX/
 # Local dataset videos, Ultralytics settings, and temporary paper extracts
 Videos/
 .ultralytics/
+runs/
+PAPER_NOTES.md
 *.pdf
 *_extracted.txt
 
