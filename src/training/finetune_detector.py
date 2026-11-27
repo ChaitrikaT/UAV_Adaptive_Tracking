@@ -134,6 +134,7 @@ def finetune_detector(
         epochs=epochs,
         imgsz=imgsz,
         batch=batch,
+        workers=0,
         project="outputs/yolo_train",
         name=Path(out_weights).stem,
         exist_ok=True,

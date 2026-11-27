@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from src.detection.detector import YOLODetector
+from src.detection.detector import AerialBirdFilter, YOLODetector
 from src.features.features import ConditionFeatureExtractor
 from src.selector.selector import HysteresisSmoother, make_selector
 from src.tracking.tracker import ByteTrackerWrapper
@@ -114,6 +114,19 @@ class TrackingPipeline:
                 classes=classes_filter,
             )
 
+        # Initialize optional quiet bird filter
+        bf_cfg = self.config.get("bird_filter", {})
+        self.bird_filter: Optional[AerialBirdFilter] = None
+        if bf_cfg.get("enabled", False):
+            self.bird_filter = AerialBirdFilter(
+                weights=bf_cfg.get("weights", "weights/yolov8n.pt"),
+                imgsz=int(bf_cfg.get("imgsz", 640)),
+                conf=float(bf_cfg.get("conf", 0.25)),
+                bird_class_id=int(bf_cfg.get("bird_class_id", 14)),
+                airplane_class_id=int(bf_cfg.get("airplane_class_id", 4)),
+                iou_threshold=float(bf_cfg.get("iou_threshold", 0.30)),
+            )
+
         # Initialize tracking components
         trk_cfg = self.config.get("tracking", {})
         self.tracker = ByteTrackerWrapper(
@@ -201,6 +214,8 @@ class TrackingPipeline:
         frame_records: List[Dict[str, Any]] = []
         track_records: List[Dict[str, Any]] = []
         detector_calls = 0
+        birds_filtered_total = 0
+        airplanes_flagged_total = 0
         mode_switches = 0
         prev_active_mode = "FAST"
         previous_tracks: List[Dict[str, Any]] = []
@@ -241,6 +256,10 @@ class TrackingPipeline:
             if should_detect and detector is not None:
                 detector_calls += 1
                 boxes = detector.detect(frame)
+                if self.bird_filter is not None:
+                    boxes, b_rem, a_flag = self.bird_filter.filter_boxes(frame, boxes)
+                    birds_filtered_total += b_rem
+                    airplanes_flagged_total += a_flag
                 tracks = self.tracker.update(boxes, frame)
             else:
                 # Detector skipped: advance tracker Kalman prediction
@@ -342,6 +361,8 @@ class TrackingPipeline:
             "avg_fps": round(avg_fps, 1),
             "detector_calls": detector_calls,
             "detector_call_ratio": round(detector_calls / max(1, processed_count), 3),
+            "birds_filtered": birds_filtered_total,
+            "airplanes_flagged": airplanes_flagged_total,
             "mode_switches": mode_switches,
             "selector": self.selector_kind if self.mode == Mode.ADAPTIVE else None,
             "output_video": str(final_video_path),

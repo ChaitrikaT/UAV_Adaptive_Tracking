@@ -11,18 +11,28 @@ paths:
 
 modes:
   fast:
-    weights: "weights/drone_yolov8n_v1.pt"
+    weights: "weights/purdue_drone_yolov8n.pt"
     imgsz: 640
     conf: 0.20
     detect_every_n_frames: 3
   robust:
-    weights: "weights/drone_yolov8s_eo.pt"
+    weights: "weights/purdue_drone_yolov8s.pt"
     imgsz: 1280
-    conf: 0.18
+    conf: 0.15
     detect_every_n_frames: 1
 
 # Optional class filter IDs. Empty [] because both drone models only output drone classes.
 classes: []
+
+# Quietly filter out birds (COCO class 14) when detected alongside single-class drone model
+bird_filter:
+  enabled: true
+  weights: "weights/yolov8n.pt"
+  imgsz: 640
+  conf: 0.25
+  bird_class_id: 14
+  airplane_class_id: 4
+  iou_threshold: 0.30
 
 features:
   downscale_flow_width: 320

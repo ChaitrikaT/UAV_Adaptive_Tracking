@@ -149,8 +149,15 @@ def build_labels(
     teacher_conf: float = 0.25,
     max_frames: Optional[int] = None,
     config_path: Union[str, Path] = "config.yaml",
+    gt_dir: Optional[Union[str, Path]] = None,
 ) -> pd.DataFrame:
-    """Generate teacher-student training rows with all 10 causal features."""
+    """Generate training rows with all 10 causal features.
+
+    When ``gt_dir`` is provided, labels are derived directly from ground truth:
+    a frame is labelled ROBUST if FAST misses GT targets in the next ``window`` frames.
+    Otherwise falls back to ROBUST-teacher agreement.
+    """
+    from src.evaluation.ground_truth import discover_gt_for_video, load_mot_gt
     from src.pipeline.pipeline import Mode, TrackingPipeline
 
     videos = [
@@ -171,28 +178,44 @@ def build_labels(
             clips.append(dst)
 
     fast = TrackingPipeline(Mode.FAST, config_path=config_path)
-    robust = TrackingPipeline(Mode.ROBUST, config_path=config_path)
+    robust = None if gt_dir else TrackingPipeline(Mode.ROBUST, config_path=config_path)
     names = RollingFeatures.names()
     tables = []
     for n, clip in enumerate(clips, 1):
+        src_stem = clip.stem.split("__var")[0]
         print(f"[{n}/{len(clips)}] {clip.name}: FAST pass...", flush=True)
         f_sum = fast.run_video(clip, max_frames=max_frames, save_outputs=False)
-        print(f"[{n}/{len(clips)}] {clip.name}: ROBUST pass...", flush=True)
-        r_sum = robust.run_video(clip, max_frames=max_frames, save_outputs=False)
 
-        frames = min(len(f_sum["records_df"]), len(r_sum["records_df"]))
-        agree = frame_agreement(f_sum["tracks_df"], r_sum["tracks_df"], frames, reference_conf=teacher_conf)
-        future = forward_window_mean(agree, window)
-        label = np.where(future >= tau, "FAST", "ROBUST")
+        if gt_dir:
+            gt_path = discover_gt_for_video(clip.parent / f"{src_stem}.mov", gt_dir=gt_dir)
+            if gt_path is None:
+                gt_path = discover_gt_for_video(clip, gt_dir=gt_dir)
+            if gt_path is None:
+                print(f"    skipping {clip.name}: no GT found in {gt_dir}")
+                continue
+            gt_df = load_mot_gt(gt_path)
+            frames = len(f_sum["records_df"])
+            agree = frame_agreement(f_sum["tracks_df"], gt_df, frames, reference_conf=0.0, iou_thr=0.3)
+            future = forward_window_mean(agree, window)
+            label = np.where(future >= tau, "FAST", "ROBUST")
+            passes = (("fast_pass", f_sum),)
+        else:
+            print(f"[{n}/{len(clips)}] {clip.name}: ROBUST pass...", flush=True)
+            r_sum = robust.run_video(clip, max_frames=max_frames, save_outputs=False)
+            frames = min(len(f_sum["records_df"]), len(r_sum["records_df"]))
+            agree = frame_agreement(f_sum["tracks_df"], r_sum["tracks_df"], frames, reference_conf=teacher_conf)
+            future = forward_window_mean(agree, window)
+            label = np.where(future >= tau, "FAST", "ROBUST")
+            passes = (("fast_pass", f_sum), ("robust_pass", r_sum))
 
-        for source, summ in (("fast_pass", f_sum), ("robust_pass", r_sum)):
+        for source, summ in passes:
             rows = pd.DataFrame(_rolling_rows(summ["records_df"].iloc[:frames]), columns=names)
             rows["frame"] = np.arange(frames)
             rows["agreement"] = agree.round(3)
             rows["future_agreement"] = future.round(3)
             rows["label"] = label
             rows["clip"] = clip.stem
-            rows["source_video"] = clip.stem.split("__var")[0]
+            rows["source_video"] = src_stem
             rows["pass"] = source
             tables.append(rows)
         print(f"    {frames} frames, ROBUST needed on {np.mean(label == 'ROBUST') * 100:.0f}% of them")
@@ -451,16 +474,24 @@ def main() -> None:
     p.add_argument("--tau", type=float, default=0.8, help="share of ROBUST's targets FAST must find")
     p.add_argument("--skip-labels", action="store_true", help="reuse data/processed/training_labels.csv")
     p.add_argument("--models", nargs="*", default=None, help="subset of models to train")
+    p.add_argument("--gt-dir", type=str, default=None, help="MOT GT dir for GT-based labels instead of ROBUST teacher")
+    p.add_argument("--split-file", type=str, default=None, help="JSON split file (e.g. data/splits/purdue_split.json)")
+    p.add_argument("--split", type=str, default="train", help="Split key to use from --split-file")
     args = p.parse_args()
 
     if not args.skip_labels:
-        videos = find_videos(args.videos) if args.videos else None
+        if args.split_file:
+            sp = json.loads(Path(args.split_file).read_text(encoding="utf-8"))
+            videos = [Path("Videos") / f"{name}.mov" for name in sp[args.split]]
+        else:
+            videos = find_videos(args.videos) if args.videos else None
         build_labels(
             videos,
             variants_per_video=args.variants,
             window=args.window,
             tau=args.tau,
             max_frames=args.max_frames,
+            gt_dir=args.gt_dir,
         )
     _print_summary(train_selector(selected_models=args.models))
 

@@ -1,65 +1,82 @@
 # Condition-Aware Adaptive Perception for Air-to-Air UAV Tracking
 
-A unified, research-rigorous, and demo-ready UAV tracking framework combining:
+A research-rigorous, demo-ready air-to-air UAV tracking framework combining:
 - **Streamlit Live Dashboard** (`app.py`): Real-time tracking preview, per-frame mode timelines, target flight paths, online-replay verification badge, selector CV leaderboard, and side-by-side comparison.
 - **10 Causal Condition Features** (`src/features/features.py`): `blur`, `mean_brightness`, `contrast`, `frame_change`, `box_area_ratio`, `mean_confidence`, `camera_motion` (DIS optical flow), `has_track`, `frames_since_seen`, and `target_speed` (+ 15-frame rolling averages).
-- **Multi-Model Adaptive Selector** (`src/selector/selector.py`):
+- **Adaptive Mode Selector** (`src/selector/selector.py`):
   - `rules` (hand-set baseline)
-  - `tree` (Decision Tree), `forest` (Random Forest), `gbm` (Gradient Boosting), `logreg` (Calibrated Logistic Regression), `svm` (Calibrated RBF SVM), `mlp` (MLP Neural Network), plus `xgb` / `lgbm` when installed.
-- **Aerial-Filtered Detection + Synchronized ByteTrack** (`config.yaml`, `src/tracking/tracker.py`):
-  - `classes: [4, 14, 33]` (COCO `airplane`, `bird`, `kite`) removes terrain false positives (`cow`, `car`, `skis`, `baseball bat`) when using COCO weights.
-  - `ByteTrackerWrapper` increments `frame_id` on skipped-detector frames so `track_buffer` stays synchronized with Kalman predictions.
-- **Ground-Truth Evaluation & Verification Protocol** (`src/evaluation/ground_truth.py`, `src/evaluation/metrics.py`, `src/evaluation/protocol.py`):
+  - `tree` (Decision Tree) and `forest` (Random Forest), trained on **ground-truth-derived labels** (label `ROBUST` when `FAST` misses a GT target in the next 15 frames).
+- **Single-Class Drone Detection + Quiet Bird Filtering** (`src/detection/detector.py`, `config.yaml`):
+  - Fine-tuned single-class (`drone`) YOLOv8n (`640px`, FAST) and YOLOv8s (`1280px`, ROBUST) trained strictly on the Purdue training split.
+  - `AerialBirdFilter` runs a lightweight COCO check (`bird=14`, `airplane=4`) when candidate detections are present, quietly suppressing bird false positives before ByteTrack.
+- **Synchronized ByteTrack + Hysteresis Smoothing** (`src/tracking/tracker.py`, `src/selector/selector.py`):
+  - `ByteTrackerWrapper` increments `frame_id` and advances Kalman predictions on skipped-detector frames.
+  - `HysteresisSmoother` (`min_mode_duration=15`, `persistence_frames=5`) prevents rapid mode oscillation.
+- **Leak-Free Ground-Truth Evaluation & Verification Protocol** (`src/evaluation/`):
   - Optimal Hungarian matching for **HOTA, IDF1, MOTA, IDSW, Recall, Precision**.
-  - Online-replay equivalence verification (`0` mismatches between live and cached replay), block-bootstrap CIs, and formal verdict (`PASS` / `MARGINAL` / `NEGATIVE`).
-- **Drone Detector Fine-Tuning** (`src/training/finetune_detector.py`):
-  - Converts MOT ground-truth (or pseudo-labels) + videos into YOLO format and fine-tunes YOLOv8.
+  - Online-replay equivalence verification (`0` mismatches), shuffled-order timing (1 warm-up + 5 repeats), and 95% block-bootstrap CIs.
 
 ---
 
-## Dataset Audit (`Videos/` + `data/uploads/`)
+## Leak-Free Dataset & Split (`data/splits/purdue_split.json`)
 
-- **50 Purdue clips** (`Videos/Clip_1.mov` – `Clip_50.mov`) are **not repetitive**: they span `1920x1080` and `1280x960` resolutions, `309–1800` frames, sharpness (Laplacian variance) `20–83`, and brightness `100–136`.
-- **Additional clips** in `data/uploads/`: `Demo_V_DRONE_017 (1).mp4` (`640x512` IR/thermal-style, `328` frames) and `Recording 2026-11-25 140418.mp4` (`1262x620`, `905` frames).
-- **Detector finding**: Generic COCO weights miss tiny/thermal drones on some clips (e.g., `Demo_V_DRONE_017 (1).mp4` had `0` aerial-class detections). Fine-tuning YOLO on labelled drone data (`finetune_detector.py`) is recommended when MOT `.txt` annotations are available.
+Following the **Dogfight 40/10 precedent** on the 50 Purdue UAV-to-UAV videos (`Videos/Clip_1.mov` – `Clip_50.mov`, MOT GT in `data/gt/`):
+- **Train (32 videos):** `Clip_1` – `Clip_32` (`1,659` YOLO frames; `6,333` GT-labelled selector frames)
+- **Validation (8 videos):** `Clip_33` – `Clip_40` (`355` YOLO frames; used only for YOLO val & selector threshold tuning)
+- **Held-Out Test (10 videos):** `Clip_41` – `Clip_50` (evaluated once at the end; automated leakage check enforces 0 overlap)
+- **MOT-FLY (`data/raw/mot_fly/`):** Cloned from `https://github.com/CZC-123/MOT-FLY` (`MOT-FLY DATASET.mp4` available for qualitative demo; note the external Google Drive full-archive link in the upstream README currently returns HTTP 404).
 
 ---
 
-## Multi-Clip Benchmark Results (4 Diverse Clips, 80 Frames Each)
+## Ground-Truth Selector Training (32 Train Videos, GroupKFold CV)
 
-Evaluated on `Clip_3.mov`, `Clip_21.mov`, `Clip_31.mov`, and `Demo_V_DRONE_017 (1).mp4` ([outputs/metrics/multi_clip_benchmark.csv](outputs/metrics/multi_clip_benchmark.csv)):
+Trained with `python -m src.training.train_selector --split-file data/splits/purdue_split.json --split train --gt-dir data/gt --variants 0 --max-frames 200 --models tree forest` (`6,333` rows, `84%` ROBUST label share):
 
-| Run | Avg FPS | Detector Calls % | Time in ROBUST % | Agreement % | Replay Equivalence |
-|---|---:|---:|---:|---:|---|
-| **Fast** | 25.8 | 33.8% | 0.0% | 85.6% | — |
-| **Robust** | 3.1 | 100.0% | 100.0% | 100.0% | — |
-| **Adaptive + Random Forest** | **17.2** | **53.8%** | 30.0% | 94.7% | PASS (0/80 mismatches) |
-| **Adaptive + Logistic Regression** | 14.6 | 64.1% | 45.3% | **95.3%** | PASS (0/80 mismatches) |
-| **Adaptive + Decision Tree** | 10.2 | 61.2% | 41.2% | 94.7% | PASS (0/80 mismatches) |
-| **Adaptive + Gradient Boosting** | 9.2 | 57.2% | 35.0% | **95.3%** | PASS (0/80 mismatches) |
-| **Adaptive + MLP Neural Net** | 7.3 | 71.6% | 56.6% | **95.3%** | PASS (0/80 mismatches) |
-| **Adaptive + SVM (RBF)** | 7.3 | 68.1% | 51.6% | **95.3%** | PASS (0/80 mismatches) |
-| **Adaptive + Rules (Baseline)** | 5.5 | 78.1% | 66.6% | 95.3% | PASS (0/80 mismatches) |
+| Selector | CV Accuracy | Balanced Acc | F1 (ROBUST) | ROC-AUC | Predicted ROBUST % |
+|---|---:|---:|---:|---:|---:|
+| **Rules (Baseline)** | 0.807 | 0.489 | 0.893 | — | 97% |
+| **Decision Tree** | 0.641 | 0.470 | 0.771 | 0.529 | 73% |
+| **Random Forest** | 0.763 | 0.495 | 0.863 | 0.608 | 90% |
 
-**Conclusion:** Learned adaptive selectors achieve **94.7%–95.3% agreement** with always-ROBUST (vs. `85.6%` for always-FAST, which drops to `45.0%` on hard clips like `Clip_3.mov`) while cutting detector calls by **36%–46%** and boosting speed **3×–5.5×** over always-ROBUST (`17.2 FPS` for Random Forest, `14.6 FPS` for Logistic Regression, `9.2 FPS` for Gradient Boosting vs. `3.1 FPS` for ROBUST and `5.5 FPS` for Rules).
+---
+
+## Held-Out Purdue Test Evaluation (10 Videos: `Clip_41`–`Clip_50`, 300 Frames/Clip)
+
+Evaluated with `python -m src.evaluation.eval_split --split test --max-frames 300 --repeats 5` (GPU: NVIDIA GeForce RTX 4050 Laptop GPU, shuffled order, 1 warm-up + 5 timing repeats, IoU=0.3):
+
+| Configuration | HOTA | IDF1 | MOTA | IDSW | Recall % | Precision % | Detector Calls % | Time in ROBUST % | Median FPS (Min–Max) | Replay OK |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| **Always FAST** (`yolov8n`, 640px) | 2.88 | 6.32 | 3.82 | 40 | 6.85 | 59.35 | 33.30% | 0.00% | 29.26 (28.92–29.78) | — |
+| **Always ROBUST** (`yolov8s`, 1280px) | 2.04 | 4.17 | 1.73 | 23 | 4.40 | 51.82 | 100.00% | 100.00% | 18.51 (18.35–18.64) | — |
+| **Adaptive (Rules)** | 2.07 | 4.19 | 1.95 | 25 | 4.58 | 55.20 | 90.66% | 85.86% | 23.52 (22.98–23.73) | PASS |
+| **Adaptive (Decision Tree)** | 2.36 | 4.88 | 2.01 | **23** | 4.93 | 58.36 | **72.26%** | **58.33%** | **23.50** (23.07–24.26) | PASS |
+| **Adaptive (Random Forest)** | 2.03 | 4.41 | 1.96 | **23** | 4.66 | 53.15 | 82.63% | 73.90% | 20.00 (19.73–20.19) | PASS |
+
+**Key Findings:**
+- **ID Switches & Compute:** Both learned selectors (`Decision Tree` and `Random Forest`) cut ID switches from **40** (Always FAST) down to **23** (matching Always ROBUST) while reducing detector calls by **17.4%–27.7%** and boosting speed over Always ROBUST (`23.50 FPS` vs `18.51 FPS`).
+- **Tiny-Target Bottleneck:** Purdue targets are often `~13×11 px` in `1080p` frames, keeping overall recall low (`4.4%–6.9%`) under default ByteTrack association thresholds; this motivates future work on ROI-cropped detection around predicted tracks.
 
 ---
 
 ## Quick Start
 
 ```powershell
-# 1. Verify environment
+# 1. Verify environment & CUDA
 .\.venv\Scripts\python.exe run.py --check-setup
 
 # 2. Launch Streamlit Demo UI
 .\.venv\Scripts\streamlit.exe run app.py
 
-# 3. Train all selector models (leak-free GroupKFold by source_video)
-.\.venv\Scripts\python.exe -m src.training.train_selector --videos Videos/Clip_1.mov Videos/Clip_3.mov Videos/Clip_26.mov Videos/Clip_36.mov Videos/Clip_46.mov --variants 1 --max-frames 120
+# 3. Create leak-free 32/8/10 Purdue split & YOLO dataset
+.\.venv\Scripts\python.exe -m src.training.prepare_splits
 
-# 4. Run CLI comparison with replay verification
-.\.venv\Scripts\python.exe run.py --video Videos/Clip_3.mov --compare --verify-replay --max-frames 100
+# 4. Fine-tune FAST (640px) & ROBUST (1280px) YOLO on GPU (train split only)
+.\.venv\Scripts\python.exe -m src.training.finetune_detector --data-yaml data/yolo_drone_split/drone_dataset.yaml --base-weights weights/yolov8n.pt --out-weights weights/purdue_drone_yolov8n.pt --epochs 20 --imgsz 640 --batch 16
+.\.venv\Scripts\python.exe -m src.training.finetune_detector --data-yaml data/yolo_drone_split/drone_dataset.yaml --base-weights weights/yolov8s.pt --out-weights weights/purdue_drone_yolov8s.pt --epochs 20 --imgsz 1280 --batch 4
 
-# 5. Fine-tune YOLO when MOT ground-truth .txt files are placed in data/gt/
-.\.venv\Scripts\python.exe -m src.training.finetune_detector --videos Videos --gt-dir data/gt --epochs 30
+# 5. Train Decision Tree & Random Forest selectors with GT labels
+.\.venv\Scripts\python.exe -m src.training.train_selector --split-file data/splits/purdue_split.json --split train --gt-dir data/gt --variants 0 --max-frames 200 --models tree forest
+
+# 6. Run held-out test evaluation (with val tuning, shuffled FPS, and 95% CIs)
+.\.venv\Scripts\python.exe -m src.evaluation.eval_split --split test --max-frames 300 --repeats 5
 ```
